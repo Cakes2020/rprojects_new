@@ -1,13 +1,10 @@
 ---
-title: "VicWaCI: Identifying wet and dry spells in Victoria (AGCD)"
-author: "Carly Tozer"
-date: "2026-10-27"
 output: 
   html_document: 
     keep_md: true
 ---
 
-VicWaCI: Identifying wet and dry spells in Victoria (AGCD)
+# VicWaCI: Identifying wet and dry spells in Victoria (AGCD)
 
 
 

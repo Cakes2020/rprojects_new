@@ -1,8 +1,10 @@
+---
 output: 
   html_document: 
     keep_md: true
+---
 
-#VicWaCI: Identifying wet and dry spells in Victoria (AGCD)
+# VicWaCI: Identifying wet and dry spells in Victoria (AGCD)
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
