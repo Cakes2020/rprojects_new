@@ -78,6 +78,6 @@ tercile_plot_list <- map(Precip_monthly_df, function(df) {
   theme(panel.grid.major.y = element_line(colour = "black", linewidth = 0.3),panel.grid.minor.y = element_line(linetype = "dashed", colour = "black"), panel.grid.major.x = element_blank(), panel.background = element_rect(fill = NA), panel.ontop = TRUE, panel.border = element_blank())
 })
 
-
+walk(tercile_plot_list, print)
 ```
 
