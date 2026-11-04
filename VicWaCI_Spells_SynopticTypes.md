@@ -16,9 +16,15 @@ Reading in monthly AGCD precip files Victorian subregions and Victoria as a whol
 #Create list of files
 files <- list.files(path = "/Users/toz008/Documents/VICWaCI/VicWaCI_inputData", pattern = "monthly", full.names = TRUE)
 
+#Extracting region names from filenames
+regions <- str_remove(basename(files), "agcd_v2-0-4_precip_total_")
+regions <- str_remove(basename(regions), "_monthly_1900-2025.nc")
+
 #Read in precip data and assign each element in the list as the filename
 Monthly_AGCD_precip <- set_names(files, basename(files)) |> 
   map(\(x) ncvar_get(nc_open(x), "precip"))
+
+Monthly_AGCD_precip <- set_names(Monthly_AGCD_precip, regions)
 ```
 
 Calculating monthly terciles
@@ -49,7 +55,7 @@ map(Precip_monthly_df,
 ```
 
 ```
-## $`agcd_v2-0-4_precip_total_north-east-victoria_monthly_1900-2025.nc`
+## $`north-east-victoria`
 ## # A tibble: 3 × 2
 ##   Tercile Terc_count
 ##     <dbl>      <int>
@@ -57,7 +63,7 @@ map(Precip_monthly_df,
 ## 2       2        502
 ## 3       3        505
 ## 
-## $`agcd_v2-0-4_precip_total_north-west-victoria_monthly_1900-2025.nc`
+## $`north-west-victoria`
 ## # A tibble: 3 × 2
 ##   Tercile Terc_count
 ##     <dbl>      <int>
@@ -65,7 +71,7 @@ map(Precip_monthly_df,
 ## 2       2        502
 ## 3       3        506
 ## 
-## $`agcd_v2-0-4_precip_total_south-east-victoria_monthly_1900-2025.nc`
+## $`south-east-victoria`
 ## # A tibble: 3 × 2
 ##   Tercile Terc_count
 ##     <dbl>      <int>
@@ -73,7 +79,7 @@ map(Precip_monthly_df,
 ## 2       2        504
 ## 3       3        504
 ## 
-## $`agcd_v2-0-4_precip_total_south-west-victoria_monthly_1900-2025.nc`
+## $`south-west-victoria`
 ## # A tibble: 3 × 2
 ##   Tercile Terc_count
 ##     <dbl>      <int>
@@ -81,7 +87,7 @@ map(Precip_monthly_df,
 ## 2       2        504
 ## 3       3        504
 ## 
-## $`agcd_v2-0-4_precip_total_victoria_monthly_1900-2025.nc`
+## $victoria
 ## # A tibble: 3 × 2
 ##   Tercile Terc_count
 ##     <dbl>      <int>
@@ -93,7 +99,7 @@ map(Precip_monthly_df,
 Tercile plots showing events of length 3 months and greater
 
 ``` r
-tercile_plot_list <- map(Precip_monthly_df, function(df) {
+tercile_plot_list <- imap(Precip_monthly_df, function(df, name) {
   ggplot(df %>% group_by(grouping = rleid(Tercile)) %>% filter(n() >= 3), aes(x = Month, y = Year, fill = factor(Tercile)))+
   geom_tile()+
   scale_y_reverse(expand=c(0,0),breaks = seq(from=1900, to=2025, by=10))+
@@ -101,7 +107,7 @@ tercile_plot_list <- map(Precip_monthly_df, function(df) {
   scale_fill_manual(values = c("1"="indianred", "2"= "beige", "3"="steelblue3"))+
   scale_x_continuous(expand=c(0,0), breaks = seq(1,12,1))+
 #  scale_y_continuous(expand=c(0,0), breaks = seq(from=1900, to=2025, by=10))+
-  labs(x="Month",y="Year",fill = "Tercile",title = "Title")+
+  labs(x="Month",y="Year",fill = "Tercile",title = name)+
   theme_bw()+
 #  theme(panel.grid = element_blank())
   theme(panel.grid.major.y = element_line(colour = "black", linewidth = 0.3),panel.grid.minor.y = element_line(linetype = "dashed", colour = "black"), panel.grid.major.x = element_blank(), panel.background = element_rect(fill = NA), panel.ontop = TRUE, panel.border = element_blank())
@@ -111,4 +117,18 @@ walk(tercile_plot_list, print)
 ```
 
 ![](VicWaCI_Spells_SynopticTypes_files/figure-html/unnamed-chunk-5-1.png)<!-- -->![](VicWaCI_Spells_SynopticTypes_files/figure-html/unnamed-chunk-5-2.png)<!-- -->![](VicWaCI_Spells_SynopticTypes_files/figure-html/unnamed-chunk-5-3.png)<!-- -->![](VicWaCI_Spells_SynopticTypes_files/figure-html/unnamed-chunk-5-4.png)<!-- -->![](VicWaCI_Spells_SynopticTypes_files/figure-html/unnamed-chunk-5-5.png)<!-- -->
+
+``` r
+#save plots of monthly spells
+walk2(names(tercile_plot_list), tercile_plot_list, function(name, plot) {
+  ggsave(filename = paste0("/Users/toz008/Documents/VICWaCI/Plots/",name, "_monthlySpells_AGCD.png"), plot = plot, width = 8, height = 8)
+         })
+```
+
+
+``` r
+#saving timeseries of terciles to .csv
+
+iwalk(Precip_monthly_df, ~ write_csv(.x, paste0(.y, ".csv")))
+```
 
